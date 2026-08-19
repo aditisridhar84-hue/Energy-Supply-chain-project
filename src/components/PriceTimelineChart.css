@@ -1,0 +1,58 @@
+.voyage-trace__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.voyage-trace__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.voyage-trace__legend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.voyage-tooltip {
+  background: var(--ink-3);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  max-width: 220px;
+}
+
+.voyage-tooltip__month {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.voyage-tooltip__price {
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--teal);
+  margin-bottom: 4px;
+}
+
+.voyage-tooltip__note {
+  font-size: 11.5px;
+  color: var(--paper-dim);
+  line-height: 1.4;
+}
+
+.voyage-tooltip__note--pending {
+  color: var(--amber);
+}
