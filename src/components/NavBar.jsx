@@ -1,12 +1,8 @@
 import './NavBar.css';
 
 const TABS = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'case-study', label: '2026 Hormuz Crisis' },
-  { id: 'risk-engine', label: 'Risk Engine' },
-  { id: 'simulator', label: 'What If?' },
-  { id: 'routes', label: 'Routes' },
-  { id: 'reserve', label: 'Reserve' },
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'case-study', label: '2026 Hormuz Case Study' },
 ];
 
 export default function NavBar({ active, onChange }) {

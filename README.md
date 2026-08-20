@@ -1,103 +1,78 @@
-# Fairway — India Petroleum Supply-Chain Resilience
+# INDIA ENERGY RESILIENCE
 
-A prototype that traces India's exposure to the 2026 Strait of Hormuz crisis end to end:
+AI-powered geopolitical risk and procurement decision-support prototype, built around the real
+2026 Strait of Hormuz crisis. **Frontend-only, no backend required** — deploys straight from
+this repo to Vercel, Netlify, or GitHub Pages.
 
 ```
-Geopolitical event → Supply-chain disruption → Crude price shock →
-India's import cost → Alternative suppliers/routes → Refinery & logistics risk →
-AI-generated (rule-based) recommendation
+LIVE RISK → ECONOMIC IMPACT → AI RECOMMENDATION
 ```
 
-Built for a hackathon/college submission. **Frontend-only, no backend required** — deploys
-straight from this repo to Vercel, Netlify, or GitHub Pages.
+Challenge statement: *"Design an AI-powered system that continuously monitors geopolitical and
+logistics risk, models disruption scenarios and their economic impact, and generates executable
+procurement rerouting recommendations."* This prototype implements the first three of the five
+illustrative directions in full (Geopolitical Risk Intelligence, Disruption Scenario Modelling,
+Adaptive Procurement Orchestration) and intentionally keeps Strategic Reserve and the Digital
+Twin lightweight — a "Reserve coverage" indicator and a simplified Risk Map stand in for them,
+rather than overbuilding for a 5-day prototype.
 
-## What's in the app
+## Pages
 
-| Page | What it shows |
-|---|---|
-| **Overview** | Live-style instrument panel (Brent, Indian Basket, % vs. baseline, illustrative risk score) + signature price-shock chart |
-| **2026 Hormuz Crisis — India Impact** | Dedicated case study: event timeline, month-by-month Indian Basket price with % change, import-cost exposure calculator, supplier-diversification before/during comparison |
-| **Risk Engine** | The transparent, weighted **Geopolitical Supply Risk Score** formula, applied to three real snapshots (pre-conflict, peak shock, current) |
-| **What If? Simulator** | Sliders for Hormuz disruption, crude price, import disruption, and alternative-supply availability → projected risk band + rule-based recommendations |
-| **Routes** | Simplified supplier → shipping route → port → refinery → distribution network, with Hormuz-dependent legs flagged high-risk |
-| **Reserve** | Strategic Reserve Stress Test — a fully transparent calculator that uses only numbers you enter, never assumed official figures |
+- **Dashboard** — the whole flow on one screen: KPI strip → Geopolitical & Supply Risk Map →
+  What-If Disruption Simulator → AI Procurement Recommendation → Resilience Score → Data &
+  Methodology.
+- **2026 Hormuz Case Study** — the real, sourced case study (event timeline, month-by-month
+  Indian Basket price, import-cost exposure, supplier diversification) that the Dashboard's
+  models are calibrated against.
 
-## Data provenance — how to read every number
+## DEMO MODE
 
-Every figure in the app carries one of five tags (see `src/data/dataTypes.js`), shown as a
-small colored badge next to the number:
-
-- **REAL** — retrieved from a named official/primary source
-- **CALCULATED** — a transparent formula applied to REAL data (formula is always shown)
-- **SIMULATION** — your own hypothetical input, explicitly labeled "not an official forecast"
-- **AI INSIGHT** — plain-language narration of a score/recommendation a formula already computed (never a black-box judgment)
-- **FORECAST** — a third-party or model-generated prediction, cited to its source
-
-`src/data/priceData.js` and `src/data/supplierData.js` contain the curated dataset used for
-the case study, each entry with `source: { name, dataset, period, unit, url, type }`. Two
-months (May–June 2026) are intentionally left as `null` rather than invented, because the
-PPAC historical download requires a login and no other verified monthly average could be
-found at the time of writing — see the note on each entry.
-
-### Known data-source limitation
-
-[PPAC](https://ppac.gov.in/) (Petroleum Planning & Analysis Cell, Ministry of Petroleum &
-Natural Gas) is the authoritative source for the Indian Basket crude price and import/export
-data, but its historical dataset downloads sit behind a free account signup, so this
-prototype could not pull a live daily/monthly series directly. Instead it uses:
-
-- Official Government of India statements (Lok Sabha replies) for April and July 2026
-- A rating-agency research note (ICRA) that itself cites PPAC-based figures for Feb/Mar 2026
-- A PPAC-sourced tracking site for the latest August 2026 spot reading
-
-**To connect a live feed later:** replace the arrays in `src/data/priceData.js` and
-`src/data/supplierData.js` with data fetched from a PPAC account, EIA's API, or a market-data
-provider. No other file needs to change — every component reads from these two files only.
+This is a 5-day hackathon prototype (`DEMO_MODE = true` in `src/config/demoConfig.js`). Real
+prices and the Hormuz case-study figures are genuine sourced readings; country-level disruption
+probabilities, route-dependency percentages, and confidence scores are illustrative demo values
+pending live feeds. Every number in the UI carries a badge — **Live/Observed**, **Modelled**,
+**AI Insight**, or **Demo Data** — so nothing demo is ever presented as observed fact. See the
+"Data & Methodology" section at the bottom of the Dashboard for the full breakdown, and
+`src/config/demoConfig.js` for the single source of truth on what's real vs. demo.
 
 ## Architecture
 
-- **React + Vite**, no router library (simple tab state in `src/App.jsx`) — keeps the bundle
-  small and deploy config trivial.
-- **`src/data/`** — the only place raw numbers live. Swap in a live feed here.
-- **`src/lib/`** — pure calculation functions (`riskEngine.js`, `calculations.js`,
-  `recommendations.js`). Every formula is a few readable lines with the weights/logic visible
-  in the file — nothing is an opaque LLM call.
-- **`src/components/`** — shared UI: `DataBadge`, `Provenance`, `Panel`, `NavBar`,
-  `PriceTimelineChart`, `SupplierMixChart`.
-- **`src/pages/`** — one file per tab.
+- **React + Vite**, no router library — two tabs via simple state in `src/App.jsx`.
+- **`src/config/demoConfig.js`** — the one place that declares demo mode and lists what a
+  production build would connect to (oil price APIs, AIS shipping data, sanctions feeds, etc.).
+- **`src/data/`** — all raw numbers, each REAL entry with `source: { name, dataset, period,
+  unit, url, type }`. Swap in a live feed here without touching any component.
+  - `priceData.js` — Brent + Indian Basket monthly series (real, cited)
+  - `supplierData.js` — pre-crisis vs. during-crisis supplier mix (real, cited)
+  - `riskMapData.js` — per-country risk-map nodes (aggregate shares real, per-country detail demo)
+  - `scenarioData.js` — What-If scenario presets, price-impact ceiling calibrated to the real
+    April 2026 shock
+- **`src/lib/`** — pure calculation functions, no black boxes:
+  - `riskEngine.js` — transparent weighted Geopolitical Supply Risk Score
+  - `scenarioEngine.js` — turns (scenario, severity%) into supply gap / price / cost / refinery risk
+  - `resilienceScore.js` — 5-component India Energy Resilience Score
+  - `recommendations.js` — ranks risk-map suppliers into the Priority 1/2/3 procurement plan
+  - `calculations.js` — % change from baseline, import cost estimate
+- **`src/components/dashboard/`** — KPICard, RiskMap, ScenarioSimulator, ProcurementOrchestrator,
+  ResilienceScore, DataMethodology.
+- **`src/components/`** — shared UI: DataBadge, Provenance, Panel, NavBar, PriceTimelineChart,
+  SupplierMixChart.
 
 ## Run locally
 
 ```bash
 npm install
 npm run dev
+npm run build   # production build, output in dist/
 ```
 
-## Deploy (pick one — all are free)
+## Deploy (pick one — all free)
 
-### Option A — Vercel (recommended, easiest)
-1. Push this folder to a new GitHub repository.
-2. Go to vercel.com, "Add New Project", import the repo.
-3. Framework preset: **Vite**. Leave build command (`npm run build`) and output dir (`dist`)
-   as detected. Click Deploy.
+**Vercel (recommended):** push to GitHub → vercel.com → "Add New Project" → import repo →
+framework auto-detected as Vite → Deploy.
 
-### Option B — Netlify
-1. Push to GitHub.
-2. app.netlify.com → "Add new site" → "Import an existing project".
-3. Build command: `npm run build`. Publish directory: `dist`.
+**Netlify:** push to GitHub → app.netlify.com → "Add new site" → build command `npm run build`,
+publish directory `dist`.
 
-### Option C — GitHub Pages
-1. Push to GitHub.
-2. In `vite.config.js`, add `base: '/<your-repo-name>/'`.
-3. `npm run build`, then deploy the `dist/` folder using the `gh-pages` npm package or
-   GitHub's "Deploy from a branch" Pages setting pointed at a `gh-pages` branch.
-
-## Scalability notes (for judges)
-
-- Data layer is fully decoupled from UI — a live PPAC/EIA/Kpler feed can be dropped in behind
-  `src/data/*.js` without touching components.
-- Risk scoring is a pure function (`computeRiskScore`), so it can move server-side or into an
-  edge function unchanged if this grows past a static site.
-- Recommendation generation is rule-based today (`src/lib/recommendations.js`); it's written
-  so the same input/output shape could be handed to a real LLM call later without changing
-  any component that consumes it.
+**GitHub Pages:** add `base: '/<your-repo-name>/'` to `vite.config.js`, `npm run build`, deploy
+`dist/` via the `gh-pages` package or GitHub's "Deploy from a branch" setting.

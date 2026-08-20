@@ -66,7 +66,7 @@ export function computeRiskScore(inputs) {
 
 // AI_INSIGHT — plain-language narration of a score the formula already computed.
 // Deliberately template-based (not a live LLM call) so the demo is reproducible offline.
-export function narrateRisk({ score, band, drivers }) {
+export function narrateRisk({ score: _score, band, drivers }) {
   const top = drivers.slice(0, 2).map((d) => d.label.toLowerCase());
   const templates = {
     LOW: `Risk is contained. The largest contributors right now are ${top.join(' and ')}, but none are severe enough to threaten supply continuity.`,
