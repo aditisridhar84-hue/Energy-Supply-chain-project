@@ -1,13 +1,41 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import DataBadge from '../DataBadge';
 import { generateProcurementPlan } from '../../lib/recommendations';
+import { getRecommendationsApi } from '../../lib/backendApi';
 import './ProcurementOrchestrator.css';
 
 export default function ProcurementOrchestrator({ scenarioResult, onViewRoutes }) {
   const [compareOpen, setCompareOpen] = useState(false);
   const [expandedWhy, setExpandedWhy] = useState(null);
 
-  const plan = generateProcurementPlan({ hormuzDisruptionPct: scenarioResult?.hormuzDisruptionPct ?? 0 });
+  const hormuzDisruptionPct = scenarioResult?.hormuzDisruptionPct ?? 0;
+  const [plan, setPlan] = useState(() => generateProcurementPlan({ hormuzDisruptionPct }));
+
+  useEffect(() => {
+    let mounted = true;
+    getRecommendationsApi(hormuzDisruptionPct)
+      .then(({ recommendations }) => {
+        if (!mounted) return;
+        setPlan(recommendations.map((item, index) => ({
+          priority: index + 1,
+          supplierId: item.supplier_id,
+          supplier: item.supplier,
+          route: item.route,
+          risk: item.risk,
+          costImpact: `${item.cost_premium_pct}% premium`,
+          availability: item.availability,
+          reason: item.reason,
+          whyReasons: [
+            `Suitability score: ${item.suitability_score}/100`,
+            `Estimated route risk: ${item.risk_pct}%`,
+            `Estimated transit time: ${item.transit_days} days`,
+          ],
+          confidence: item.confidence,
+        })));
+      })
+      .catch(() => mounted && setPlan(generateProcurementPlan({ hormuzDisruptionPct })));
+    return () => { mounted = false; };
+  }, [hormuzDisruptionPct]);
 
   function downloadPlan() {
     const lines = [

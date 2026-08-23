@@ -39,6 +39,22 @@
   height: fit-content;
 }
 
+.dashboard__status { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.dashboard__api-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.dashboard__api-status > span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.dashboard__api-status--connected { color: var(--teal); }
+.dashboard__api-status--connected > span { background: var(--teal); }
+.dashboard__api-status--fallback { color: var(--amber); }
+.dashboard__api-status--fallback > span { background: var(--amber); }
+
 .dashboard__kpis {
   display: grid;
   grid-template-columns: repeat(5, 1fr);

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import Panel from '../components/Panel';
 import DataBadge from '../components/DataBadge';
 import KPICard from '../components/dashboard/KPICard';
@@ -12,6 +12,7 @@ import { pctChangeFromBaseline } from '../lib/calculations';
 import { computeRiskScore } from '../lib/riskEngine';
 import { computeScenario } from '../lib/scenarioEngine';
 import { DEMO_MODE } from '../config/demoConfig';
+import { getBackendHealth } from '../lib/backendApi';
 import './Dashboard.css';
 
 // "Current assessed conditions" — an explicit, separate assumption from the interactive
@@ -22,7 +23,16 @@ const CURRENT_ASSUMED_HORMUZ_DISRUPTION_PCT = 55;
 export default function Dashboard() {
   const [scenarioResult, setScenarioResult] = useState(null);
   const [focusId, setFocusId] = useState(null);
+  const [backendStatus, setBackendStatus] = useState('checking');
   const riskMapRef = useRef(null);
+
+  useEffect(() => {
+    let mounted = true;
+    getBackendHealth()
+      .then(() => mounted && setBackendStatus('connected'))
+      .catch(() => mounted && setBackendStatus('fallback'));
+    return () => { mounted = false; };
+  }, []);
 
   const handleScenarioChange = useCallback((result) => setScenarioResult(result), []);
 
@@ -55,7 +65,12 @@ export default function Dashboard() {
           <p className="dashboard__title">INDIA ENERGY RESILIENCE</p>
           <p className="dashboard__subtitle">AI-powered geopolitical risk and procurement decision support</p>
         </div>
-        {DEMO_MODE && <span className="dashboard__demo-badge">DEMO MODE</span>}
+        <div className="dashboard__status">
+          {DEMO_MODE && <span className="dashboard__demo-badge">DEMO MODE</span>}
+          <span className={`dashboard__api-status dashboard__api-status--${backendStatus}`}>
+            <span aria-hidden="true" /> API {backendStatus === 'checking' ? 'CHECKING' : backendStatus === 'connected' ? 'CONNECTED' : 'FALLBACK'}
+          </span>
+        </div>
       </header>
 
       <section className="dashboard__kpis">

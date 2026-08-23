@@ -384,6 +384,34 @@ Current limitations include:
 * Prototype scenario data may not represent real-time market conditions
 * Recommendations should not be treated as operational or financial advice
 
+## Historical model training
+
+The repository includes a reproducible training pipeline at `ml/train_risk_model.py`.
+It learns binary disruption risk from daily historical corridor features rather than
+claiming that a language model can predict supply events. The expected CSV columns are
+documented in `ml/historical_data_schema.csv`:
+`date`, `event_intensity`, `tone_severity`, `news_volume_spike`, `price_volatility`,
+and `disruption_label` (`0` for normal, `1` for a verified disruption window).
+
+The pipeline sorts rows by date and uses a 60/20/20 chronological train/validation/test
+split. It compares a majority baseline, logistic regression, and histogram gradient
+boosting; preprocessing is fitted only on training data. The model with the best
+validation macro-F1 is retrained on train plus validation data and evaluated once on the
+held-out test period. Accuracy is reported alongside balanced accuracy, precision,
+recall, and macro-F1 because disruption days may be rare.
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+.venv\Scripts\python ml\train_risk_model.py path\to\corridor_daily_features.csv
+```
+
+The command writes `ml/artifacts/risk_model.joblib` and `ml/artifacts/metrics.json`.
+The current frontend snapshot is not a training dataset: it has too few observations,
+no daily signal history, and no verified disruption labels. Do not fabricate rows to
+improve accuracy; collect historical GDELT/news and EIA price data, define disruption
+windows from independent sources, and backtest on an unseen event.
+
 These limitations define the next stage of development rather than the core concept of the platform.
 
 ---
