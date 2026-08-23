@@ -2,7 +2,7 @@
 
 > **From geopolitical disruption to actionable supply-chain intelligence.**
 
-Fairway is a frontend-based decision-support prototype that visualizes how disruptions in critical maritime routes—such as the **Strait of Hormuz**—can cascade through India's petroleum supply chain.
+Fairway is a full-stack decision-support prototype that visualizes how disruptions in critical maritime routes—such as the **Strait of Hormuz**—can cascade through India's petroleum supply chain.
 
 It connects the entire chain:
 
@@ -216,7 +216,7 @@ Fairway aims to answer:
 
 # 🏗️ System Architecture
 
-Fairway is intentionally designed as a **frontend-first prototype**.
+Fairway is a React/Vite decision-support frontend backed by a small FastAPI service.
 
 ```text
                     USER
@@ -242,13 +242,14 @@ Fairway is intentionally designed as a **frontend-first prototype**.
 
 ### Current architecture
 
-* **Frontend:** React
-* **Build Tool:** Vite
-* **Styling:** CSS
-* **Data Visualization:** Frontend charting/visualization components
-* **Recommendation Engine:** Rule-based logic
-* **Deployment:** Netlify
-* **Version Control:** Git + GitHub
+* **Frontend:** React 19 with Vite and CSS
+* **Charts:** Recharts
+* **Backend:** FastAPI served by Uvicorn
+* **API integration:** Frontend calls `/api/health`, `/api/scenarios/simulate`, and `/api/recommendations`; Vite proxies these paths to `localhost:8000` during development
+* **Risk logic:** Transparent frontend calculations plus backend scoring and supplier ranking
+* **Data pipeline:** EIA Brent prices, GDELT historical/live signals, public RSS fallback, feature engineering, independent disruption labels, and chronological model evaluation
+* **Deployment:** Render Blueprint with one static site and one web service
+* **Version control:** Git + GitHub
 
 ---
 
@@ -256,13 +257,16 @@ Fairway is intentionally designed as a **frontend-first prototype**.
 
 | Technology | Purpose                        |
 | ---------- | ------------------------------ |
-| React      | User interface                 |
-| Vite       | Development & production build |
-| JavaScript | Application logic              |
-| HTML/CSS   | Structure and styling          |
-| Git        | Version control                |
-| GitHub     | Source-code hosting            |
-| Netlify    | Deployment                     |
+| React      | User interface                         |
+| Vite       | Development and production build       |
+| Recharts   | Timeline and scenario visualizations   |
+| FastAPI    | Risk, scenario, and recommendation API |
+| Uvicorn    | Python application server               |
+| Python     | API and data/ML pipeline                |
+| pandas     | Data preparation and feature generation |
+| scikit-learn | Historical risk model training        |
+| GitHub     | Source-code hosting                     |
+| Render     | Frontend and backend deployment         |
 
 ---
 
@@ -272,7 +276,11 @@ Fairway is a **prototype decision-support system**.
 
 The application combines scenario inputs and petroleum supply-chain indicators to demonstrate how geopolitical disruptions can propagate through India's energy ecosystem.
 
-The recommendation layer is currently **rule-based**, allowing each recommendation to be traced back to the risk conditions that triggered it.
+The recommendation layer is currently **rule-based**, allowing each recommendation to be traced back to route safety, capacity, cost premium, and transit-time inputs.
+
+The dashboard labels values as real/observed, calculated, AI insight, simulation, or demo data. Real dated price readings and cited aggregate supplier shares are kept separate from illustrative country-level probabilities, route dependencies, and confidence scores.
+
+The backend exposes a health endpoint that reports whether the available data files support live mode or demo fallback. It does not place orders, contact suppliers, or claim to provide an operational forecast.
 
 ### Important distinction
 
@@ -306,9 +314,9 @@ Integrate APIs and trusted datasets for:
 * Port congestion
 * Supplier volumes
 
-### Phase 2 — Backend
+### Phase 2 — Production Operations
 
-Introduce a backend for:
+Extend the current backend for:
 
 * Automated data ingestion
 * Historical data storage
@@ -377,10 +385,9 @@ This version is a **hackathon/academic prototype**.
 
 Current limitations include:
 
-* Frontend-only architecture
-* No continuously running backend
+* The Render deployment runs a lightweight API, but it is not a continuously scheduled ingestion platform
 * No live vessel-tracking pipeline
-* Rule-based rather than trained ML recommendations
+* Procurement recommendations remain rule-based; the trained classifier is an offline artifact and is not used to make automated orders
 * Prototype scenario data may not represent real-time market conditions
 * Recommendations should not be treated as operational or financial advice
 
@@ -445,26 +452,29 @@ This demonstrates the complete **event-to-decision pipeline**.
 # 📁 Project Structure
 
 ```text
-hormuz-india-resilience/
+Energy-Supply-chain-project/
 │
 ├── public/
 │
 ├── src/
-│   ├── components/
-│   ├── assets/
-│   ├── data/
-│   ├── App.*
-│   └── main.*
+│   ├── components/          # Shared UI and dashboard panels
+│   ├── data/                # Static snapshots and scenario inputs
+│   ├── lib/                 # API clients and risk calculations
+│   ├── pages/               # Dashboard and case study views
+│   ├── config/              # Demo mode and source configuration
+│   └── App.jsx
 │
+├── backend/main.py         # FastAPI service
+├── data/                   # Historical/live signal and price CSVs
+├── ml/                     # Fetch, feature, label, and training scripts
+├── requirements.txt
 ├── index.html
 ├── package.json
 ├── package-lock.json
+├── render.yaml             # Render frontend + backend Blueprint
 ├── vite.config.js
-├── .gitignore
 └── README.md
 ```
-
-*The exact contents of `src/` may vary depending on the current implementation.*
 
 ---
 
@@ -479,11 +489,19 @@ hormuz-india-resilience/
 ### Installation
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/hormuz-india-resilience.git
+git clone https://github.com/aditisridhar84-hue/Energy-Supply-chain-project.git
 
-cd hormuz-india-resilience
+cd Energy-Supply-chain-project
 
 npm install
+```
+
+Install the Python API dependencies in a virtual environment:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 ```
 
 ### Start development server
@@ -492,7 +510,13 @@ npm install
 npm run dev
 ```
 
-The application will be available through the local Vite development URL.
+The frontend is available at `http://localhost:5173`. To enable the API-backed dashboard actions, run the API in a second terminal:
+
+```powershell
+npm run api
+```
+
+The API is available at `http://localhost:8000`, and Vite proxies `/api` requests to it.
 
 ### Production build
 
@@ -500,11 +524,36 @@ The application will be available through the local Vite development URL.
 npm run build
 ```
 
+Run the production build locally with:
+
+```bash
+npm run preview
+```
+
+Optional quality check:
+
+```bash
+npm run lint
+```
+
 ---
 
 # Deployment
 
-The project can be deployed directly through **Netlify** using the GitHub repository.
+The repository includes `render.yaml` for a two-service Render deployment:
+
+* `fairway-api` is a Python web service running FastAPI/Uvicorn.
+* `fairway-web` is a static site serving the Vite build.
+
+### Deploy with Render
+
+1. Open the Render dashboard and choose **New → Blueprint**.
+2. Connect `aditisridhar84-hue/Energy-Supply-chain-project`.
+3. Select the repository branch containing `render.yaml` and apply the Blueprint.
+4. Render builds both services and assigns the default URLs:
+        `https://fairway-web.onrender.com` and `https://fairway-api.onrender.com`.
+
+The Blueprint sets the frontend build-time variable `VITE_API_BASE_URL` and the API variable `CORS_ORIGINS`. If Render assigns custom service names or domains, update those two values in the service environment settings and redeploy.
 
 ### Build command
 
@@ -516,6 +565,15 @@ npm run build
 
 ```text
 dist
+```
+
+### Render API settings
+
+```text
+Runtime: Python
+Build command: pip install -r requirements.txt
+Start command: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+Health check: /api/health
 ```
 
 ---
@@ -566,11 +624,11 @@ into one interactive platform.
 
 **Current Status:** 🟢 Working Prototype
 
-**Architecture:** Frontend-only
+**Architecture:** React/Vite frontend + FastAPI backend
 
 **Recommendation Engine:** Explainable rule-based system
 
-**Deployment:** Web-based
+**Deployment:** Render Blueprint (static site + web service)
 
 **Future Direction:** Live-data + backend + AI/ML-powered energy risk intelligence
 

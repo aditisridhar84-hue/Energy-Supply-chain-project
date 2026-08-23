@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -16,9 +17,17 @@ DATA_DIR = ROOT / "data"
 ARTIFACT_DIR = ROOT / "ml" / "artifacts"
 
 app = FastAPI(title="Fairway Energy Resilience API", version="0.1.0")
+cors_origins = [
+    origin.strip()
+    for origin in os.environ.get(
+        "CORS_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173",
+    ).split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=cors_origins,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
