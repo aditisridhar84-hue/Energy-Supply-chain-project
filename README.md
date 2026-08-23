@@ -540,7 +540,7 @@ npm run lint
 
 # Deployment
 
-The repository includes `render.yaml` for a two-service Render deployment:
+The repository includes `render.yaml` for a two-service Render deployment. Render can also deploy the two services separately from the public repository, which is the current deployment path.
 
 * `fairway-api` is a Python web service running FastAPI/Uvicorn.
 * `fairway-web` is a static site serving the Vite build.
@@ -550,10 +550,16 @@ The repository includes `render.yaml` for a two-service Render deployment:
 1. Open the Render dashboard and choose **New → Blueprint**.
 2. Connect `aditisridhar84-hue/Energy-Supply-chain-project`.
 3. Select the repository branch containing `render.yaml` and apply the Blueprint.
-4. Render builds both services and assigns the default URLs:
-        `https://fairway-web.onrender.com` and `https://fairway-api.onrender.com`.
+4. Render builds both services and assigns public URLs.
 
 The Blueprint sets the frontend build-time variable `VITE_API_BASE_URL` and the API variable `CORS_ORIGINS`. If Render assigns custom service names or domains, update those two values in the service environment settings and redeploy.
+
+### Current deployment
+
+* **Frontend:** https://fairway-web-i0ls.onrender.com
+* **Backend health check:** https://fairway-api-yttm.onrender.com/api/health
+
+Free Render services may spin down after inactivity, so the first request after a pause can take longer than usual.
 
 ### Build command
 
